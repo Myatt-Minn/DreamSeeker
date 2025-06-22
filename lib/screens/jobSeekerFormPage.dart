@@ -146,17 +146,36 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
             children: [
               GestureDetector(
                 onTap: _pickImage,
-                child: CircleAvatar(
-                  radius: 60,
-                  backgroundImage: _profileImage != null
-                      ? FileImage(_profileImage!)
-                      : null,
-                  backgroundColor: Colors.grey[800],
-                  child: _profileImage == null
-                      ? const Icon(Icons.camera_alt, color: Colors.white)
-                      : null,
+                child: Center(
+                  // Keeps the circle centered and avoids full width
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey[300],
+                    ),
+                    child: _profileImage != null
+                        ? ClipOval(
+                            child: Image.file(
+                              _profileImage!,
+                              width: 120,
+                              height: 120,
+                              fit: BoxFit
+                                  .cover, // Ensures image fills the circle
+                            ),
+                          )
+                        : const Center(
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                          ),
+                  ),
                 ),
               ),
+
               const SizedBox(height: 20),
               _buildTextField(
                 _fullNameController,

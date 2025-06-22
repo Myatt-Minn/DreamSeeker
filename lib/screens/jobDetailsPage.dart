@@ -1,11 +1,67 @@
+import 'dart:io';
+
 import 'package:dream_seeker/models/jobModel.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class JobDetailsPage extends StatelessWidget {
   final JobModel job;
 
   const JobDetailsPage({super.key, required this.job});
+
+  Future<void> _applyForJob(BuildContext context) async {
+    try {
+      // Pick file
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('You must be logged in.')));
+        return;
+      }
+
+      // Upload file to Supabase Storage
+      final fileBytes = file.bytes ?? await File(file.path!).readAsBytes();
+      final fileName =
+          '${user.id}_${DateTime.now().millisecondsSinceEpoch}_${file.name}';
+      final storageResponse = await Supabase.instance.client.storage
+          .from('profilepics')
+          .uploadBinary(fileName, fileBytes);
+
+      if (storageResponse.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to upload CV.')));
+        return;
+      }
+
+      final cvUrl = Supabase.instance.client.storage
+          .from('profilepics')
+          .getPublicUrl(fileName);
+
+      // Insert application row
+      final insertResponse = await Supabase.instance.client
+          .from('applications')
+          .insert({'seeker_id': user.id, 'cv': cvUrl, 'job_id': job.id});
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Application submitted!')));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,9 +191,7 @@ class JobDetailsPage extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Apply logic
-                  },
+                  onPressed: () => _applyForJob(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -146,7 +200,7 @@ class JobDetailsPage extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Apply Now',
+                    'Apply Now (Choose CV file)',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),

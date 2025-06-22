@@ -25,6 +25,7 @@ class JobModel {
 
   factory JobModel.fromJson(Map<String, dynamic> json) {
     return JobModel(
+      id: json['id'] as int?,
       title: json['title'] as String? ?? '',
       company: json['company'] as String? ?? '',
       location: json['location'] as String? ?? '',
