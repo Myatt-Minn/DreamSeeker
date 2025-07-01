@@ -1,18 +1,18 @@
-import 'package:dream_seeker/models/jobSeekerModel.dart';
-import 'package:dream_seeker/screens/editSeekerProfile.dart';
+import 'package:dream_seeker/models/recruiterModel.dart';
+import 'package:dream_seeker/screens/jobPostFormPage.dart';
 import 'package:dream_seeker/screens/roleSelectionPage.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+class RecruiterProfilePage extends StatefulWidget {
+  const RecruiterProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<RecruiterProfilePage> createState() => _RecruiterProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
-  JobSeekerModel? jobSeeker;
+class _RecruiterProfilePageState extends State<RecruiterProfilePage> {
+  RecruiterModel? recruiter;
   bool isLoading = true;
 
   @override
@@ -27,17 +27,17 @@ class _ProfilePageState extends State<ProfilePage> {
       if (user == null) return;
 
       final response = await Supabase.instance.client
-          .from('seekers')
+          .from('recruiters')
           .select()
           .eq('user_id', user.id)
           .single();
 
       setState(() {
-        jobSeeker = JobSeekerModel.fromJson(response);
+        recruiter = RecruiterModel.fromJson(response);
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching profile data: $e');
+      print('Error fetching recruiter profile: $e');
     } finally {
       setState(() {
         isLoading = false;
@@ -51,7 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (jobSeeker == null) {
+    if (recruiter == null) {
       return const Scaffold(body: Center(child: Text('Profile not found')));
     }
 
@@ -77,41 +77,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 CircleAvatar(
                   radius: 56,
                   backgroundColor: Colors.white,
-                  backgroundImage: jobSeeker!.profile_pic.isNotEmpty
-                      ? NetworkImage(jobSeeker!.profile_pic)
+                  backgroundImage: recruiter!.profilePic.isNotEmpty
+                      ? NetworkImage(recruiter!.profilePic)
                       : null,
-                  child: jobSeeker!.profile_pic.isEmpty
+                  child: recruiter!.profilePic.isEmpty
                       ? const Icon(Icons.person, size: 56, color: Colors.grey)
                       : null,
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EditSeekerProfilePage(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    padding: const EdgeInsets.all(6),
-                    child: const Icon(
-                      Icons.edit,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ),
+                // You can add an edit button here if you have an edit page for recruiters
               ],
             ),
             const SizedBox(height: 18),
             Text(
-              jobSeeker!.full_name,
+              recruiter!.fullName,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -121,7 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 6),
             Text(
-              jobSeeker!.position,
+              recruiter!.companyName,
               style: const TextStyle(
                 fontSize: 17,
                 color: Colors.black,
@@ -144,46 +122,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: Column(
                   children: [
-                    _profileInfoRow(Icons.email, jobSeeker!.email),
+                    _profileInfoRow(Icons.email, recruiter!.email),
                     const SizedBox(height: 10),
-                    _profileInfoRow(Icons.school, jobSeeker!.education),
+                    _profileInfoRow(Icons.language, recruiter!.companyWebsite),
                     const SizedBox(height: 10),
-                    _profileInfoRow(Icons.work, jobSeeker!.experience),
+                    _profileInfoRow(
+                      Icons.location_on,
+                      recruiter!.companyLocation,
+                    ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-            _buildSectionTitle('Skills'),
-            const SizedBox(height: 8),
-            jobSeeker!.skills.isEmpty
-                ? const Text(
-                    'No skills added',
-                    style: TextStyle(color: Colors.grey),
-                  )
-                : Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: jobSeeker!.skills
-                        .map(
-                          (skill) => Chip(
-                            label: Text(
-                              skill,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            backgroundColor: Colors.grey[200],
-                            labelStyle: const TextStyle(color: Colors.black),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
             const SizedBox(height: 28),
-            _buildSectionTitle('About'),
+            _buildSectionTitle('About Company'),
             const SizedBox(height: 8),
             Container(
               width: double.infinity,
@@ -200,8 +152,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
               child: Text(
-                jobSeeker!.experience.isNotEmpty
-                    ? jobSeeker!.experience
+                recruiter!.companyDescription.isNotEmpty
+                    ? recruiter!.companyDescription
                     : 'No description provided.',
                 style: const TextStyle(fontSize: 15, color: Colors.black87),
               ),
@@ -216,7 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const EditSeekerProfilePage(),
+                          builder: (context) => const Jobpostformpage(),
                         ),
                       );
                     },
@@ -228,9 +180,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       elevation: 0,
                     ),
-                    icon: const Icon(Icons.edit, color: Colors.white),
+                    icon: const Icon(Icons.upload, color: Colors.white),
                     label: const Text(
-                      'Edit Profile',
+                      'Upload Job',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -273,7 +225,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Text(
               'DreamSeeker',
               style: TextStyle(

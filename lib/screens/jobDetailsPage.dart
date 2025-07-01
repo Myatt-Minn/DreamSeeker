@@ -56,6 +56,7 @@ class JobDetailsPage extends StatelessWidget {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Application submitted!')));
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(
         context,

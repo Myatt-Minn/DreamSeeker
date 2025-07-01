@@ -1,4 +1,7 @@
+import 'package:dream_seeker/models/jobModel.dart';
+import 'package:dream_seeker/screens/jobDetailsPage.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class JobSearchPage extends StatefulWidget {
   const JobSearchPage({super.key});
@@ -9,9 +12,7 @@ class JobSearchPage extends StatefulWidget {
 
 class _JobSearchPageState extends State<JobSearchPage> {
   final TextEditingController jobTitleController = TextEditingController();
-  final TextEditingController locationController = TextEditingController(
-    text: 'Amsterdam, Netherlands',
-  );
+  final TextEditingController locationController = TextEditingController();
 
   final List<String> jobTypes = [
     'Full-time',
@@ -22,6 +23,73 @@ class _JobSearchPageState extends State<JobSearchPage> {
   ];
   final Set<String> selectedTypes = {};
 
+  List<JobModel> searchResults = [];
+  bool isLoading = false;
+  String? errorMessage;
+
+  Future<void> searchJobs() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+      searchResults = [];
+    });
+
+    try {
+      var query = Supabase.instance.client.from('jobs').select();
+
+      // Filter by job title
+      final title = jobTitleController.text.trim();
+      if (title.isNotEmpty) {
+        query = query.ilike('title', '%$title%');
+      }
+
+      // Filter by location
+      final location = locationController.text.trim();
+      if (location.isNotEmpty) {
+        query = query.ilike('location', '%$location%');
+      }
+
+      // ...existing code...
+      // Filter by job type(s)
+      if (selectedTypes.isNotEmpty) {
+        // Build an OR filter for each selected type
+        final orFilters = selectedTypes
+            .map((type) => "job_type.ilike.%$type%")
+            .join(',');
+        query = query.or(orFilters);
+      }
+      // ...existing code...
+      final response = await query.order('created_at', ascending: false);
+
+      setState(() {
+        searchResults = (response as List)
+            .map((job) => JobModel.fromJson(job as Map<String, dynamic>))
+            .toList();
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error: $e';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  final List<Color> avatarColors = [
+    Colors.blue,
+    Colors.green,
+    Colors.orange,
+    Colors.purple,
+    Colors.red,
+    Colors.teal,
+    Colors.amber,
+    Colors.cyan,
+    Colors.deepOrange,
+    Colors.indigo,
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +97,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Icon(Icons.search, color: Colors.black),
+        leading: const Icon(Icons.search, color: Colors.black),
         actions: [
           IconButton(
             icon: const Icon(Icons.bookmark, color: Colors.black),
@@ -126,9 +194,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Implement search logic here
-                },
+                onPressed: searchJobs,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -136,11 +202,142 @@ class _JobSearchPageState extends State<JobSearchPage> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  'Save changes',
-                  style: TextStyle(color: Colors.white),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Search',
+                        style: TextStyle(color: Colors.white),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            if (errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  errorMessage!,
+                  style: const TextStyle(color: Colors.red),
                 ),
               ),
+
+            if (searchResults.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Results',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: searchResults.length,
+                    itemBuilder: (context, index) {
+                      final job = searchResults[index];
+                      final color = avatarColors[index % avatarColors.length];
+                      return _buildJobCard(job, color: color);
+                    },
+                  ),
+                ],
+              ),
+            if (!isLoading && searchResults.isEmpty && errorMessage == null)
+              const Center(
+                child: Text(
+                  'No jobs found. Try adjusting your filters.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobCard(JobModel job, {required Color color}) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => JobDetailsPage(job: job)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: color,
+                  child: const Icon(Icons.work, color: Colors.black),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        job.title,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        job.company,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.bookmark, color: Colors.black),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(job.jobType, style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: job.requirements.map((req) {
+                    return Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Text(
+                        req,
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                Text(job.salary, style: const TextStyle(color: Colors.black)),
+              ],
             ),
           ],
         ),

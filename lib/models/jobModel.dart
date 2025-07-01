@@ -6,7 +6,7 @@ class JobModel {
   final String description;
   final String jobType; // e.g., Full-time, Part-time, Remote
   final String salary; // e.g., $60k - $80k/year
-  final List<String> requirements;
+  final List<String> requirements; //Mid-Level, Senior-Level
   final DateTime postedAt;
   final bool featured; // <-- Added field
 

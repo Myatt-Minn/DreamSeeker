@@ -1,11 +1,12 @@
+import 'dart:io';
+
 import 'package:dream_seeker/screens/navigationPage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class JobSeekerFormPage extends StatefulWidget {
-  const JobSeekerFormPage({Key? key}) : super(key: key);
+  const JobSeekerFormPage({super.key});
 
   @override
   State<JobSeekerFormPage> createState() => _JobSeekerFormPageState();
@@ -82,7 +83,14 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
             .from('profilepics')
             .getPublicUrl(fileName);
       }
+      final userData = {
+        'user_id': user.id,
+        'email': email,
+        'password': password,
+        'role': 'seeker',
+      };
 
+      await Supabase.instance.client.from('users').insert(userData);
       final data = {
         'user_id': user.id,
         'email': email,
@@ -95,26 +103,18 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
         'skills': _skills,
       };
 
-      final response = await Supabase.instance.client
-          .from('seekers')
-          .insert(data);
+      await Supabase.instance.client.from('seekers').insert(data);
 
       setState(() {
         _isLoading = false; // Stop loading
       });
 
-      if (response == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile created successfully!')),
-        );
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const Navigationpage()),
-        );
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $response')));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile created successfully!')),
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const Navigationpage()),
+      );
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -138,7 +138,7 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(

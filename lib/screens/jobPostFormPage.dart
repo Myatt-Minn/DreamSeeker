@@ -1,4 +1,6 @@
+import 'package:dream_seeker/models/jobModel.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Jobpostformpage extends StatefulWidget {
   const Jobpostformpage({super.key});
@@ -19,6 +21,7 @@ class _JobpostformpageState extends State<Jobpostformpage> {
   final TextEditingController _requirementController = TextEditingController();
 
   final List<String> _requirements = [];
+  bool _isLoading = false;
 
   void _addRequirement() {
     final requirement = _requirementController.text.trim();
@@ -26,6 +29,55 @@ class _JobpostformpageState extends State<Jobpostformpage> {
       setState(() {
         _requirements.add(requirement);
         _requirementController.clear();
+      });
+    }
+  }
+
+  Future<void> _submitJob() async {
+    // Validate form fields except requirements
+    if (!_formKey.currentState!.validate()) return;
+
+    // Validate that at least one requirement is added
+    if (_requirements.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add at least one requirement.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final job = JobModel(
+        title: _jobTitleController.text.trim(),
+        company: _companyController.text.trim(),
+        location: _locationController.text.trim(),
+        description: _descriptionController.text.trim(),
+        jobType: _jobTypeController.text.trim(),
+        salary: _salaryController.text.trim(),
+        requirements: _requirements,
+        postedAt: DateTime.now(),
+        featured: false,
+      );
+
+      final data = job.toJson();
+      data.remove('id'); // Let Supabase auto-generate
+
+      await Supabase.instance.client.from('jobs').insert(data);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Job Posted!')));
+      Navigator.of(context).pop();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }
@@ -54,8 +106,11 @@ class _JobpostformpageState extends State<Jobpostformpage> {
                 'Job Description',
                 maxLines: 4,
               ),
-              _buildTextField(_jobTypeController, 'Job Type (e.g. Full-time)'),
-              _buildTextField(_salaryController, 'Salary (e.g. \$50k - \$80k)'),
+              _buildTextField(
+                _jobTypeController,
+                'Job Type (e.g. Full-time, Remote)',
+              ),
+              _buildTextField(_salaryController, 'Salary (e.g. 50K/ year)'),
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -67,7 +122,7 @@ class _JobpostformpageState extends State<Jobpostformpage> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.add, color: Colors.white),
+                    icon: const Icon(Icons.add, color: Colors.black),
                     onPressed: _addRequirement,
                   ),
                 ],
@@ -95,19 +150,21 @@ class _JobpostformpageState extends State<Jobpostformpage> {
               const SizedBox(height: 30),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // Submit job post
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('Job Posted')));
-                  }
-                },
-                child: const Text('Submit'),
+                onPressed: _isLoading ? null : _submitJob,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Submit'),
               ),
             ],
           ),
@@ -126,16 +183,19 @@ class _JobpostformpageState extends State<Jobpostformpage> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
         controller: controller,
-
         maxLines: maxLines,
         decoration: InputDecoration(
           hintText: hintText,
-
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           suffixIcon: suffixIcon,
         ),
-        validator: (value) =>
-            value == null || value.isEmpty ? 'Required' : null,
+        // Do not validate for requirement field
+        validator: (value) {
+          if (controller == _requirementController) {
+            return null;
+          }
+          return value == null || value.isEmpty ? 'Required' : null;
+        },
       ),
     );
   }

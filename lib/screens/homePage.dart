@@ -14,6 +14,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<JobModel> allJobs = [];
   List<JobModel> featuredJobs = [];
+  String? userFullName;
+  String? userProfilePic;
 
   final List<Color> avatarColors = [
     Colors.blue,
@@ -43,32 +45,43 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    fetchAllJobs();
-    fetchFeaturedJobs();
+
+    fetchUserData();
   }
 
-  Future<void> fetchAllJobs() async {
+  // Add these methods to fetch jobs as Futures for FutureBuilder
+  Future<List<JobModel>> fetchAllJobsFuture() async {
     final response = await Supabase.instance.client
         .from('jobs')
         .select()
         .order('created_at', ascending: false);
-    setState(() {
-      allJobs = (response as List)
-          .map((job) => JobModel.fromJson(job as Map<String, dynamic>))
-          .toList();
-    });
+    return (response as List)
+        .map((job) => JobModel.fromJson(job as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<void> fetchFeaturedJobs() async {
+  Future<List<JobModel>> fetchFeaturedJobsFuture() async {
     final response = await Supabase.instance.client
         .from('jobs')
         .select()
         .eq('featured', true)
         .order('created_at', ascending: false);
+    return (response as List)
+        .map((job) => JobModel.fromJson(job as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> fetchUserData() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final response = await Supabase.instance.client
+        .from('seekers')
+        .select('full_name, profile_pic')
+        .eq('user_id', user.id)
+        .single();
     setState(() {
-      featuredJobs = (response as List)
-          .map((job) => JobModel.fromJson(job as Map<String, dynamic>))
-          .toList();
+      userFullName = response['full_name'] as String?;
+      userProfilePic = response['profile_pic'] as String?;
     });
   }
 
@@ -81,8 +94,6 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.all(16.0),
           child: ListView(
             children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
               const Text(
                 'Find a job',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -161,21 +172,24 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHeader() {
     return Row(
       children: [
-        const CircleAvatar(
+        CircleAvatar(
           radius: 24,
-          backgroundImage: NetworkImage(
-            'https://freesvg.org/img/business-man-avatar.png',
-          ),
+          backgroundImage:
+              (userProfilePic != null && userProfilePic!.isNotEmpty)
+              ? NetworkImage(userProfilePic!)
+              : const NetworkImage(
+                  'https://freesvg.org/img/business-man-avatar.png',
+                ),
+          backgroundColor: Colors.grey[300],
         ),
         const SizedBox(width: 12),
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Iveta Fork',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              userFullName ?? 'User',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            Text('HR Manager', style: TextStyle(color: Colors.grey)),
           ],
         ),
         const Spacer(),
@@ -327,27 +341,5 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  }
-
-  // Add these methods to fetch jobs as Futures for FutureBuilder
-  Future<List<JobModel>> fetchAllJobsFuture() async {
-    final response = await Supabase.instance.client
-        .from('jobs')
-        .select()
-        .order('created_at', ascending: false);
-    return (response as List)
-        .map((job) => JobModel.fromJson(job as Map<String, dynamic>))
-        .toList();
-  }
-
-  Future<List<JobModel>> fetchFeaturedJobsFuture() async {
-    final response = await Supabase.instance.client
-        .from('jobs')
-        .select()
-        .eq('featured', true)
-        .order('created_at', ascending: false);
-    return (response as List)
-        .map((job) => JobModel.fromJson(job as Map<String, dynamic>))
-        .toList();
   }
 }

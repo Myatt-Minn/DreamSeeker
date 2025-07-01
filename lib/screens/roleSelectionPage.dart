@@ -1,4 +1,5 @@
 import 'package:dream_seeker/screens/jobSeekerFormPage.dart';
+import 'package:dream_seeker/screens/recruiterFormPage.dart';
 import 'package:flutter/material.dart';
 
 class RoleSelectionPage extends StatelessWidget {
@@ -37,7 +38,14 @@ class RoleSelectionPage extends StatelessWidget {
               title: 'Job Recruiter',
               icon: Icons.business_center,
               description: 'Post jobs and find candidates.',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CompanyFormPage(),
+                  ),
+                );
+              },
               color: Colors.green[100]!,
             ),
           ],

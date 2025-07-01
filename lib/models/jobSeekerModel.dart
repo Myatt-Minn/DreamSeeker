@@ -1,5 +1,5 @@
 class JobSeekerModel {
-  final String? id; // <-- Added field
+  final int? id; // <-- Added field
   final String userId;
   final String email;
   final String password;

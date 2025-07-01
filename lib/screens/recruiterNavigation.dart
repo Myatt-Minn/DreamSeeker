@@ -1,26 +1,22 @@
-import 'package:dream_seeker/screens/applications.dart';
 import 'package:dream_seeker/screens/homePage.dart';
-import 'package:dream_seeker/screens/profilePage.dart';
-import 'package:dream_seeker/screens/searchPage.dart';
+import 'package:dream_seeker/screens/recruiterProfilePage.dart';
 import 'package:flutter/material.dart';
 
-class Navigationpage extends StatefulWidget {
-  const Navigationpage({super.key});
+class Recruiternavigation extends StatefulWidget {
+  const Recruiternavigation({super.key});
 
   @override
-  State<Navigationpage> createState() => _NavigationpageState();
+  State<Recruiternavigation> createState() => _RecruiternavigationState();
 }
 
-class _NavigationpageState extends State<Navigationpage> {
+class _RecruiternavigationState extends State<Recruiternavigation> {
   int currentIndex = 0;
 
   final List<Widget> pages = [
     HomePage(
       onSearchTap: null, // You can handle this with navigation if needed
     ),
-    const JobSearchPage(),
-    const ApplicationsPage(),
-    const ProfilePage(),
+    const RecruiterProfilePage(),
   ];
 
   @override
@@ -29,12 +25,10 @@ class _NavigationpageState extends State<Navigationpage> {
       body: _getCurrentPage(),
       bottomNavigationBar: BottomNavigationBar(
         unselectedItemColor: Colors.grey,
-        selectedItemColor: Colors.black,
+        selectedItemColor: Colors.white,
         backgroundColor: Colors.black,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Applied'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         currentIndex: currentIndex,

@@ -1,6 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:dream_seeker/screens/jobSeekerFormPage.dart';
-import 'package:dream_seeker/screens/navigationPage.dart';
 import 'package:dream_seeker/screens/recruiterFormPage.dart';
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
@@ -92,13 +91,13 @@ class _OnboardingpageState extends State<Onboardingpage> {
               title: 'Job Recruiter',
               icon: Icons.business_center,
               description: 'Post jobs and find candidates.',
-              onTap: () {},
-              // onTap: () => Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => const CompanyFormPage(),
-              //   ),
-              // ),
+
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CompanyFormPage(),
+                ),
+              ),
               color: Colors.green[100]!,
             ),
           ],

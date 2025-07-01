@@ -1,5 +1,5 @@
 class RecruiterModel {
-  final String id;
+  final int id;
   final String userId;
   final String email;
   final String password;
@@ -27,7 +27,7 @@ class RecruiterModel {
 
   factory RecruiterModel.fromJson(Map<String, dynamic> json) {
     return RecruiterModel(
-      id: json['id'] as String,
+      id: json['id'] as int,
       userId: json['user_id'] as String,
       email: json['email'] as String,
       password: json['password'] as String,
@@ -44,7 +44,7 @@ class RecruiterModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'userId': userId,
+      'user_id': userId,
       'email': email,
       'password': password,
       'profile_pic': profilePic,
