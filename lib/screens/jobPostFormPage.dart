@@ -72,6 +72,7 @@ class _JobpostformpageState extends State<Jobpostformpage> {
       ).showSnackBar(const SnackBar(content: Text('Job Posted!')));
       Navigator.of(context).pop();
     } catch (e) {
+      print('Error posting job: $e');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));

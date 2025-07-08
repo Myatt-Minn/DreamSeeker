@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class JobSeekerFormPage extends StatefulWidget {
-  const JobSeekerFormPage({super.key});
+class SeekerSignUpPage extends StatefulWidget {
+  const SeekerSignUpPage({super.key});
 
   @override
-  State<JobSeekerFormPage> createState() => _JobSeekerFormPageState();
+  State<SeekerSignUpPage> createState() => _SeekerSignUpPageState();
 }
 
-class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
+class _SeekerSignUpPageState extends State<SeekerSignUpPage> {
   final _formKey = GlobalKey<FormState>();
   File? _profileImage;
   final picker = ImagePicker();
@@ -26,7 +26,7 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
   final TextEditingController _passwordController = TextEditingController();
   final List<String> _skills = [];
 
-  bool _isLoading = false; // Add this line
+  bool _isLoading = false;
 
   Future<void> _pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -47,9 +47,9 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
     }
   }
 
-  Future<void> _submitToSupabase() async {
+  Future<void> _signUp() async {
     setState(() {
-      _isLoading = true; // Start loading
+      _isLoading = true;
     });
 
     try {
@@ -64,11 +64,11 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
       final user = authResponse.user;
       if (user == null) {
         setState(() {
-          _isLoading = false; // Stop loading
+          _isLoading = false;
         });
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Sign up failed.')));
+        ).showSnackBar(const SnackBar(content: Text('Sign up failed.')));
         return;
       }
 
@@ -83,6 +83,7 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
             .from('profilepics')
             .getPublicUrl(fileName);
       }
+
       final userData = {
         'user_id': user.id,
         'email': email,
@@ -91,7 +92,8 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
       };
 
       await Supabase.instance.client.from('users').insert(userData);
-      final data = {
+
+      final seekerData = {
         'user_id': user.id,
         'email': email,
         'password': password,
@@ -103,14 +105,14 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
         'skills': _skills,
       };
 
-      await Supabase.instance.client.from('seekers').insert(data);
+      await Supabase.instance.client.from('seekers').insert(seekerData);
 
       setState(() {
-        _isLoading = false; // Stop loading
+        _isLoading = false;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile created successfully!')),
+        const SnackBar(content: Text('Account created successfully!')),
       );
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const Navigationpage()),
@@ -119,6 +121,7 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
       setState(() {
         _isLoading = false;
       });
+      print('Error submitting form: $e'); // Log the error for debugging
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
@@ -132,13 +135,13 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         title: const Text(
-          'Job Seeker Form',
+          'Job Seeker Sign Up',
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -147,7 +150,6 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
               GestureDetector(
                 onTap: _pickImage,
                 child: Center(
-                  // Keeps the circle centered and avoids full width
                   child: Container(
                     width: 120,
                     height: 120,
@@ -161,8 +163,7 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
                               _profileImage!,
                               width: 120,
                               height: 120,
-                              fit: BoxFit
-                                  .cover, // Ensures image fills the circle
+                              fit: BoxFit.cover,
                             ),
                           )
                         : const Center(
@@ -175,7 +176,6 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
               _buildTextField(
                 _fullNameController,
@@ -207,14 +207,12 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
                 'Position',
                 leadingIcon: const Icon(Icons.work, color: Colors.black54),
               ),
-
               Row(
                 children: [
                   Expanded(
                     child: _buildTextField(
                       _skillController,
                       'Add Skill',
-                      suffixIcon: null,
                       isSkillField: true,
                       leadingIcon: const Icon(
                         Icons.star,
@@ -260,7 +258,7 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
                     : () async {
                         if (_formKey.currentState!.validate() &&
                             _skills.isNotEmpty) {
-                          await _submitToSupabase();
+                          await _signUp();
                         } else if (_skills.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -278,7 +276,7 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text('Submit'),
+                    : const Text('Sign Up'),
               ),
             ],
           ),
@@ -290,9 +288,8 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
   Widget _buildTextField(
     TextEditingController controller,
     String hintText, {
-    Widget? suffixIcon,
     bool isSkillField = false,
-    Icon? leadingIcon, // <-- Accept icon as parameter
+    Icon? leadingIcon,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -302,7 +299,6 @@ class _JobSeekerFormPageState extends State<JobSeekerFormPage> {
           hintText: hintText,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           prefixIcon: leadingIcon,
-          suffixIcon: suffixIcon,
         ),
         obscureText: hintText.toLowerCase() == 'password',
         validator: (value) {

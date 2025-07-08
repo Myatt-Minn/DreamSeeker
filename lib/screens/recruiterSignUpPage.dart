@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class CompanyFormPage extends StatefulWidget {
-  const CompanyFormPage({super.key});
+class RecruiterSignUpPage extends StatefulWidget {
+  const RecruiterSignUpPage({super.key});
 
   @override
-  State<CompanyFormPage> createState() => _CompanyFormPageState();
+  State<RecruiterSignUpPage> createState() => _RecruiterSignUpPageState();
 }
 
-class _CompanyFormPageState extends State<CompanyFormPage> {
+class _RecruiterSignUpPageState extends State<RecruiterSignUpPage> {
   final _formKey = GlobalKey<FormState>();
   File? _profileImage;
   final picker = ImagePicker();
@@ -38,7 +38,7 @@ class _CompanyFormPageState extends State<CompanyFormPage> {
     }
   }
 
-  Future<void> _submitRecruiterData() async {
+  Future<void> _signUp() async {
     setState(() {
       _isLoading = true;
     });
@@ -47,7 +47,6 @@ class _CompanyFormPageState extends State<CompanyFormPage> {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
-      // Sign up the user
       final authResponse = await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
@@ -75,6 +74,7 @@ class _CompanyFormPageState extends State<CompanyFormPage> {
             .from('profilepics')
             .getPublicUrl(fileName);
       }
+
       final userData = {
         'user_id': user.id,
         'email': email,
@@ -83,9 +83,9 @@ class _CompanyFormPageState extends State<CompanyFormPage> {
       };
 
       await Supabase.instance.client.from('users').insert(userData);
-      // Create RecruiterModel instance
+
       final recruiter = RecruiterModel(
-        id: 0, // Supabase will auto-generate
+        id: 0,
         userId: user.id,
         email: email,
         password: password,
@@ -99,29 +99,21 @@ class _CompanyFormPageState extends State<CompanyFormPage> {
       );
 
       final data = recruiter.toJson();
-      data.remove('id'); // Remove id so Supabase can auto-generate
-      data.remove('created_at'); // Remove created_at if Supabase handles it
+      data.remove('id');
+      data.remove('created_at');
 
-      final response = await Supabase.instance.client
-          .from('recruiters')
-          .insert(data);
+      await Supabase.instance.client.from('recruiters').insert(data);
 
       setState(() {
         _isLoading = false;
       });
 
-      if (response == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile created successfully!')),
-        );
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const Recruiternavigation()),
-        );
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $response')));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created successfully!')),
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const Recruiternavigation()),
+      );
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -139,7 +131,7 @@ class _CompanyFormPageState extends State<CompanyFormPage> {
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
         title: const Text(
-          'Company Info Form',
+          'Recruiter Sign Up',
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
@@ -246,7 +238,7 @@ class _CompanyFormPageState extends State<CompanyFormPage> {
                       ? null
                       : () {
                           if (_formKey.currentState!.validate()) {
-                            _submitRecruiterData();
+                            _signUp();
                           }
                         },
                   child: _isLoading
@@ -258,7 +250,7 @@ class _CompanyFormPageState extends State<CompanyFormPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text('Submit'),
+                      : const Text('Sign Up'),
                 ),
               ],
             ),

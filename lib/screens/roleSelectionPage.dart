@@ -1,5 +1,6 @@
-import 'package:dream_seeker/screens/jobSeekerFormPage.dart';
-import 'package:dream_seeker/screens/recruiterFormPage.dart';
+import 'package:dream_seeker/screens/recruiterSignUpPage.dart';
+import 'package:dream_seeker/screens/seekerSignUpPage.dart';
+import 'package:dream_seeker/screens/signInPage.dart';
 import 'package:flutter/material.dart';
 
 class RoleSelectionPage extends StatelessWidget {
@@ -9,46 +10,81 @@ class RoleSelectionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Choose Your Role',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 40),
-            _buildRoleCard(
-              context,
-              title: 'Job Seeker',
-              icon: Icons.person,
-              description: 'Find your next career opportunity.',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const JobSeekerFormPage(),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Spacer(),
+              const Text(
+                'Choose Your Role',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
+                textAlign: TextAlign.center,
               ),
-              color: Colors.indigo[100]!,
-            ),
-            const SizedBox(height: 24),
-            _buildRoleCard(
-              context,
-              title: 'Job Recruiter',
-              icon: Icons.business_center,
-              description: 'Post jobs and find candidates.',
-              onTap: () {
-                Navigator.push(
+              const SizedBox(height: 16),
+              const Text(
+                'Select how you want to use Dream Seeker',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 60),
+              _buildRoleCard(
+                context,
+                icon: Icons.work,
+                title: 'Job Seeker',
+                description: 'Find your dream job',
+                onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const CompanyFormPage(),
+                    builder: (context) => const SeekerSignUpPage(),
                   ),
-                );
-              },
-              color: Colors.green[100]!,
-            ),
-          ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildRoleCard(
+                context,
+                icon: Icons.business,
+                title: 'Recruiter',
+                description: 'Post jobs and find talent',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RecruiterSignUpPage(),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Already have an account? ',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SignInPage(),
+                      ),
+                    ),
+                    child: const Text(
+                      'Sign In',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -56,34 +92,29 @@ class RoleSelectionPage extends StatelessWidget {
 
   Widget _buildRoleCard(
     BuildContext context, {
-    required String title,
     required IconData icon,
+    required String title,
     required String description,
     required VoidCallback onTap,
-    required Color color,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: color,
+          border: Border.all(color: Colors.grey.shade300),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          color: Colors.white,
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.white,
-              child: Icon(icon, size: 30, color: Colors.black),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: Colors.white, size: 32),
             ),
             const SizedBox(width: 20),
             Expanded(
@@ -93,19 +124,20 @@ class RoleSelectionPage extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     description,
-                    style: const TextStyle(color: Colors.black54),
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16),
+            const Icon(Icons.arrow_forward_ios, color: Colors.grey),
           ],
         ),
       ),
