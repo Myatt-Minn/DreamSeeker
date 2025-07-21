@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dream_seeker/models/recruiterModel.dart';
+import 'package:dream_seeker/models/userModel.dart';
 import 'package:dream_seeker/screens/recruiterNavigation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -75,14 +76,14 @@ class _RecruiterSignUpPageState extends State<RecruiterSignUpPage> {
             .getPublicUrl(fileName);
       }
 
-      final userData = {
-        'user_id': user.id,
-        'email': email,
-        'password': password,
-        'role': 'recruiter',
-      };
+      final userData = UserModel(
+        id: user.id,
+        email: email,
+        password: password,
+        role: 'recruiter',
+      );
 
-      await Supabase.instance.client.from('users').insert(userData);
+      await Supabase.instance.client.from('users').insert(userData.toJson());
 
       final recruiter = RecruiterModel(
         id: 0,

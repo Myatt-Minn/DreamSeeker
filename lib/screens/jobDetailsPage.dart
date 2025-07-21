@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dream_seeker/models/applicationModel.dart';
 import 'package:dream_seeker/models/jobModel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -48,10 +49,15 @@ class JobDetailsPage extends StatelessWidget {
           .from('profilepics')
           .getPublicUrl(fileName);
 
+      Applicationmodel application = Applicationmodel(
+        seekerId: user.id,
+        cv: cvUrl,
+        jobId: job.id,
+      );
       // Insert application row
-      final insertResponse = await Supabase.instance.client
+      await Supabase.instance.client
           .from('applications')
-          .insert({'seeker_id': user.id, 'cv': cvUrl, 'job_id': job.id});
+          .insert(application.toJson());
 
       ScaffoldMessenger.of(
         context,
