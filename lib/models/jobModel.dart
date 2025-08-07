@@ -9,6 +9,7 @@ class JobModel {
   final List<String> requirements; //Mid-Level, Senior-Level
   final DateTime postedAt;
   final bool featured; // <-- Added field
+  final String recruiterId; // <-- Added field
 
   JobModel({
     this.id,
@@ -21,6 +22,7 @@ class JobModel {
     required this.requirements,
     required this.postedAt,
     required this.featured, // <-- Added field
+    required this.recruiterId, // <-- Added field
   });
 
   factory JobModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class JobModel {
       requirements: List<String>.from(json['requirements'] ?? []),
       postedAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       featured: json['featured'] as bool? ?? false, // <-- Added field
+      recruiterId: json['recruiter_id'] as String? ?? '', // <-- Added field
     );
   }
 
@@ -50,6 +53,8 @@ class JobModel {
       'requirements': requirements,
       'created_at': postedAt.toIso8601String(),
       'featured': featured, // <-- Added field
+
+      'recruiter_id': recruiterId, // <-- Added field
     };
   }
 }

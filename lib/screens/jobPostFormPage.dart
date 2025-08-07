@@ -60,6 +60,7 @@ class _JobpostformpageState extends State<Jobpostformpage> {
         requirements: _requirements,
         postedAt: DateTime.now(),
         featured: false,
+        recruiterId: Supabase.instance.client.auth.currentUser!.id,
       );
 
       final data = job.toJson();

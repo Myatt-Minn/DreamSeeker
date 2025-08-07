@@ -29,7 +29,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    Supabase.instance.client.auth.signOut();
     _checkUserRole();
   }
 

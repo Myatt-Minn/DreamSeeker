@@ -1,5 +1,6 @@
-import 'package:dream_seeker/screens/homePage.dart';
+import 'package:dream_seeker/screens/applied_seekers.dart';
 import 'package:dream_seeker/screens/recruiterProfilePage.dart';
+import 'package:dream_seeker/screens/recruiter_home.dart';
 import 'package:flutter/material.dart';
 
 class Recruiternavigation extends StatefulWidget {
@@ -13,9 +14,8 @@ class _RecruiternavigationState extends State<Recruiternavigation> {
   int currentIndex = 0;
 
   final List<Widget> pages = [
-    HomePage(
-      onSearchTap: null, // You can handle this with navigation if needed
-    ),
+    const RecruiterHome(),
+    const AppliedSeekers(),
     const RecruiterProfilePage(),
   ];
 
@@ -29,6 +29,7 @@ class _RecruiternavigationState extends State<Recruiternavigation> {
         backgroundColor: Colors.black,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Applied'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         currentIndex: currentIndex,
@@ -44,13 +45,7 @@ class _RecruiternavigationState extends State<Recruiternavigation> {
   Widget _getCurrentPage() {
     // If you want to handle onSearchTap, you can use a switch here
     if (currentIndex == 0) {
-      return HomePage(
-        onSearchTap: () {
-          setState(() {
-            currentIndex = 1;
-          });
-        },
-      );
+      return RecruiterHome();
     }
     return pages[currentIndex];
   }

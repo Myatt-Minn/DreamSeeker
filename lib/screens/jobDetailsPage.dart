@@ -53,6 +53,7 @@ class JobDetailsPage extends StatelessWidget {
         seekerId: user.id,
         cv: cvUrl,
         jobId: job.id,
+        recruiterId: job.recruiterId,
       );
       // Insert application row
       await Supabase.instance.client

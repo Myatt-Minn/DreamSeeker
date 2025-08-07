@@ -125,7 +125,9 @@ class _HomePageState extends State<HomePage> {
                       return _buildJobCard(
                         jobs[index],
                         isPromoted: true,
-                        color: featuredAvatarColors[index],
+                        color:
+                            featuredAvatarColors[index %
+                                featuredAvatarColors.length],
                       );
                     },
                   );
@@ -156,7 +158,7 @@ class _HomePageState extends State<HomePage> {
                       return _buildJobCard(
                         jobs[index],
                         isPromoted: false,
-                        color: avatarColors[index],
+                        color: avatarColors[index % avatarColors.length],
                       );
                     },
                   );
@@ -166,35 +168,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 24,
-          backgroundImage:
-              (userProfilePic != null && userProfilePic!.isNotEmpty)
-              ? NetworkImage(userProfilePic!)
-              : const NetworkImage(
-                  'https://freesvg.org/img/business-man-avatar.png',
-                ),
-          backgroundColor: Colors.grey[300],
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              userFullName ?? 'User',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          ],
-        ),
-        const Spacer(),
-        const Icon(Icons.notifications_none),
-      ],
     );
   }
 
